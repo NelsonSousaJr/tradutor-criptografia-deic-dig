@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tradutor de Criptografia DEIC-DIG</title>
   <style>
+    /* Reset básico */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #121212;
@@ -12,18 +15,17 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
+      min-height: 100vh;
     }
 
     .container {
       background-color: #1E1E1E;
-      padding: 25px;
+      padding: 30px;
       border-radius: 12px;
       box-shadow: 0 0 30px rgba(0,255,200,0.2);
       width: 480px;
-      overflow-y: auto;
       max-height: 95vh;
+      overflow-y: auto;
       transition: box-shadow 0.3s;
     }
 
@@ -34,7 +36,7 @@
     h1 {
       text-align: center;
       color: #00FFC8;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       text-shadow: 0 0 8px #00FFC8;
     }
 
@@ -57,9 +59,7 @@
       transition: all 0.3s;
     }
 
-    textarea {
-      height: 80px;
-    }
+    textarea { height: 80px; resize: vertical; }
 
     textarea:focus, input:focus, select:focus {
       border-color: #00FFC8;
@@ -126,12 +126,9 @@
       box-shadow: 0 0 12px rgba(0,255,200,0.5);
     }
 
-    .container::-webkit-scrollbar {
-      width: 8px;
-    }
-    .container::-webkit-scrollbar-track {
-      background: #1E1E1E;
-    }
+    /* Scrollbar customizada */
+    .container::-webkit-scrollbar { width: 8px; }
+    .container::-webkit-scrollbar-track { background: #1E1E1E; }
     .container::-webkit-scrollbar-thumb {
       background-color: #555;
       border-radius: 4px;
@@ -161,13 +158,11 @@
 
     <label>Ou cole uma imagem aqui:</label>
     <div class="paste-area" id="pasteArea">Clique aqui e pressione CTRL+V para colar</div>
-    <div id="ocrStatus">
-      <div id="ocrProgress"></div>
-    </div>
 
+    <div id="ocrStatus"><div id="ocrProgress"></div></div>
     <div id="preview"></div>
 
-    <label for="keyword">Palavra-Chave (para Cifra de Palavra-Chave):</label>
+    <label for="keyword">Palavra-Chave:</label>
     <input type="text" id="keyword" placeholder="Ex: DEIC">
 
     <label for="output">Resultado:</label>
@@ -222,8 +217,7 @@
       const keyword = keywordInput.value;
       let result = "";
       if (method === "keyword") {
-        if (action === "encrypt") result = encryptKeywordCipher(text, keyword);
-        else result = decryptKeywordCipher(text, keyword);
+        result = action === "encrypt" ? encryptKeywordCipher(text, keyword) : decryptKeywordCipher(text, keyword);
       }
       output.value = result;
     }
