@@ -62,7 +62,7 @@
             color: #c678dd;
             font-weight: bold;
         }
-        select {
+        select, input[type="file"], input[type="text"] {
             width: 100%;
             padding: 10px;
             margin-bottom: 20px;
@@ -79,6 +79,9 @@
     <div class="container">
         <h1>Tradutor de Criptografia Nerd</h1>
 
+        <label for="imageInput">Carregar Imagem com Texto:</label>
+        <input type="file" id="imageInput" accept="image/*">
+
         <label for="encryptionMethod">Escolha o Método de Criptografia:</label>
         <select id="encryptionMethod">
             <option value="keyword">Cifra de Palavra-Chave</option>
@@ -89,29 +92,24 @@
             <option value="binario">Código Binário</option>
         </select>
 
-        <label for="messageInput">Digite sua mensagem:</label>
+        <label for="messageInput">Digite sua mensagem (ou use OCR):</label>
         <textarea id="messageInput" placeholder="Sua mensagem secreta aqui..."></textarea>
 
         <label for="keywordInput" style="display: none;">Palavra-Chave (para Cifra de Palavra-Chave):</label>
-        <input type="text" id="keywordInput" placeholder="Ex: NERD" style="display: none; width: calc(100% - 20px); padding: 10px; margin-bottom: 20px; border: 1px solid #5c6370; border-radius: 5px; background-color: #21252b; color: #abb2bf; font-size: 1em; box-sizing: border-box;">
+        <input type="text" id="keywordInput" placeholder="Ex: NERD" style="display: none;">
 
         <label for="emojiInput" style="display: none;">Emoji (para Cifra de César):</label>
-        <input type="text" id="emojiInput" placeholder="Ex: 🚀" style="display: none; width: calc(100% - 20px); padding: 10px; margin-bottom: 20px; border: 1px solid #5c6370; border-radius: 5px; background-color: #21252b; color: #abb2bf; font-size: 1em; box-sizing: border-box;">
+        <input type="text" id="emojiInput" placeholder="Ex: 🚀" style="display: none;">
 
         <label for="vigenereInput" style="display: none;">Chave (para Cifra de Vigenère):</label>
-        <input type="text" id="vigenereInput" placeholder="Ex: SEGREDO" style="display: none; width: calc(100% - 20px); padding: 10px; margin-bottom: 20px; border: 1px solid #5c6370; border-radius: 5px; background-color: #21252b; color: #abb2bf; font-size: 1em; box-sizing: border-box;">
+        <input type="text" id="vigenereInput" placeholder="Ex: SEGREDO" style="display: none;">
 
         <label>Mensagem Criptografada:</label>
         <div class="output-area" id="encryptedOutput"></div>
     </div>
 
-    <script>
-        // JavaScript será adicionado aqui
-    </script>
-</body>
-</html>
-
-
+    <!-- Importando Tesseract.js -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
     <script>
         const messageInput = document.getElementById('messageInput');
@@ -123,10 +121,11 @@
         const emojiLabel = document.querySelector('label[for="emojiInput"]');
         const vigenereInput = document.getElementById('vigenereInput');
         const vigenereLabel = document.querySelector('label[for="vigenereInput"]');
+        const imageInput = document.getElementById('imageInput');
 
         const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-        // --- Cifra de Palavra-Chave ---
+        // Funções de criptografia (mesmas do seu código original) ----------------
         function generateKeywordCipherAlphabet(keyword) {
             let cleanKeyword = keyword.toUpperCase().replace(/[^A-Z]/g, '');
             let uniqueKeyword = '';
@@ -162,7 +161,6 @@
             return encryptedMessage;
         }
 
-        // --- Cifra de Atbash ---
         function encryptAtbash(message) {
             let encryptedMessage = '';
             for (let i = 0; i < message.length; i++) {
@@ -179,20 +177,14 @@
             return encryptedMessage;
         }
 
-        // --- Cifra de César (com Emoji) ---
         function getEmojiShift(emoji) {
-            // Simple approach: count characters in the emoji string (not Unicode value)
-            // For more robust, could use a predefined map or a library to get actual Unicode properties
             if (!emoji) return 0;
-            // Remove skin tone modifiers and ZWJ sequences for a more consistent count if needed
-            // For simplicity, we'll just use length for now.
-            return emoji.length % alphabet.length; // Ensure shift wraps around alphabet length
+            return emoji.length % alphabet.length;
         }
 
         function encryptCaesarCipher(message, emoji) {
             const shift = getEmojiShift(emoji);
-            if (shift === 0) return message; // No shift if emoji is empty or invalid
-
+            if (shift === 0) return message;
             let encryptedMessage = '';
             for (let i = 0; i < message.length; i++) {
                 const char = message[i].toUpperCase();
@@ -209,7 +201,6 @@
             return encryptedMessage;
         }
 
-        // --- Cifra de Vigenère ---
         function encryptVigenere(message, key) {
             if (!key) return message;
             const cleanKey = key.toUpperCase().replace(/[^A-Z]/g, '');
@@ -222,7 +213,6 @@
                 const char = message[i].toUpperCase();
                 const originalChar = message[i];
                 const charIndex = alphabet.indexOf(char);
-                
                 if (charIndex !== -1) {
                     const keyChar = cleanKey[keyIndex % cleanKey.length];
                     const keyCharIndex = alphabet.indexOf(keyChar);
@@ -237,7 +227,6 @@
             return encryptedMessage;
         }
 
-        // --- Idioma Élfico (Fictício) ---
         function encryptElfico(message) {
             const elficoMap = {
                 'A': 'Ä', 'B': 'ß', 'C': 'Ç', 'D': 'Ð', 'E': 'Ë', 'F': 'Ƒ', 'G': 'Ğ', 'H': 'Ħ', 'I': 'Ï',
@@ -245,12 +234,10 @@
                 'S': 'Š', 'T': 'Ŧ', 'U': 'Ü', 'V': 'Ṽ', 'W': 'Ŵ', 'X': 'Χ', 'Y': 'Ÿ', 'Z': 'Ž',
                 ' ': ' · ', '.': ' ◊ ', ',': ' ♦ ', '!': ' ★ ', '?': ' ☆ '
             };
-
             let encryptedMessage = '';
             for (let i = 0; i < message.length; i++) {
                 const char = message[i].toUpperCase();
                 const originalChar = message[i];
-                
                 if (elficoMap[char]) {
                     const elficoChar = elficoMap[char];
                     encryptedMessage += (originalChar === char) ? elficoChar : elficoChar.toLowerCase();
@@ -261,7 +248,6 @@
             return encryptedMessage;
         }
 
-        // --- Código Binário ---
         function encryptBinary(message) {
             let binaryMessage = '';
             for (let i = 0; i < message.length; i++) {
@@ -272,13 +258,12 @@
             return binaryMessage.trim();
         }
 
-        // --- Função de Atualização Principal ---
+        // Atualizar criptografia
         function updateEncryption() {
             const message = messageInput.value;
             const method = encryptionMethodSelect.value;
             let encryptedText = '';
 
-            // Reset visibility of conditional inputs
             keywordInput.style.display = 'none';
             keywordLabel.style.display = 'none';
             emojiInput.style.display = 'none';
@@ -317,16 +302,30 @@
             encryptedOutput.textContent = encryptedText;
         }
 
-        // --- Event Listeners ---
+        // OCR com Tesseract.js
+        imageInput.addEventListener('change', async () => {
+            const file = imageInput.files[0];
+            if (!file) return;
+
+            encryptedOutput.textContent = "🔎 Lendo imagem, aguarde...";
+
+            try {
+                const { data: { text } } = await Tesseract.recognize(file, 'por+eng'); 
+                messageInput.value = text.trim();
+                updateEncryption();
+            } catch (err) {
+                encryptedOutput.textContent = "❌ Erro ao processar a imagem.";
+                console.error(err);
+            }
+        });
+
         messageInput.addEventListener('input', updateEncryption);
         encryptionMethodSelect.addEventListener('change', updateEncryption);
         keywordInput.addEventListener('input', updateEncryption);
         emojiInput.addEventListener('input', updateEncryption);
         vigenereInput.addEventListener('input', updateEncryption);
 
-        // Initial call to set up the UI and encrypt any default message
         updateEncryption();
     </script>
 </body>
 </html>
-
