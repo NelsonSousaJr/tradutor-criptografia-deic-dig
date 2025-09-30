@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tradutor de Criptografia Nerd</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #282c34;
+            color: #abb2bf;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #3a404d;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+        }
+        h1 {
+            color: #61afef;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+        textarea {
+            width: calc(100% - 20px);
+            height: 120px;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #5c6370;
+            border-radius: 5px;
+            background-color: #21252b;
+            color: #abb2bf;
+            font-size: 1em;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        .output-area {
+            background-color: #21252b;
+            border: 1px solid #5c6370;
+            border-radius: 5px;
+            padding: 15px;
+            min-height: 80px;
+            text-align: left;
+            word-wrap: break-word;
+            font-size: 1em;
+            color: #98c379;
+        }
+        label {
+            display: block;
+            text-align: left;
+            margin-bottom: 8px;
+            color: #c678dd;
+            font-weight: bold;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #5c6370;
+            border-radius: 5px;
+            background-color: #21252b;
+            color: #abb2bf;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tradutor de Criptografia Nerd</h1>
+
+        <label for="encryptionMethod">Escolha o Método de Criptografia:</label>
+        <select id="encryptionMethod">
+            <option value="keyword">Cifra de Palavra-Chave</option>
+            <option value="atbash">Cifra de Atbash</option>
+            <option value="caesarEmoji">Cifra de César (com Emoji)</option>
+            <option value="vigenere">Cifra de Vigenère</option>
+            <option value="elfico">Idioma Élfico (Fictício)</option>
+            <option value="binario">Código Binário</option>
+        </select>
+
+        <label for="messageInput">Digite sua mensagem:</label>
+        <textarea id="messageInput" placeholder="Sua mensagem secreta aqui..."></textarea>
+
+        <label for="keywordInput" style="display: none;">Palavra-Chave (para Cifra de Palavra-Chave):</label>
+        <input type="text" id="keywordInput" placeholder="Ex: NERD" style="display: none; width: calc(100% - 20px); padding: 10px; margin-bottom: 20px; border: 1px solid #5c6370; border-radius: 5px; background-color: #21252b; color: #abb2bf; font-size: 1em; box-sizing: border-box;">
+
+        <label for="emojiInput" style="display: none;">Emoji (para Cifra de César):</label>
+        <input type="text" id="emojiInput" placeholder="Ex: 🚀" style="display: none; width: calc(100% - 20px); padding: 10px; margin-bottom: 20px; border: 1px solid #5c6370; border-radius: 5px; background-color: #21252b; color: #abb2bf; font-size: 1em; box-sizing: border-box;">
+
+        <label for="vigenereInput" style="display: none;">Chave (para Cifra de Vigenère):</label>
+        <input type="text" id="vigenereInput" placeholder="Ex: SEGREDO" style="display: none; width: calc(100% - 20px); padding: 10px; margin-bottom: 20px; border: 1px solid #5c6370; border-radius: 5px; background-color: #21252b; color: #abb2bf; font-size: 1em; box-sizing: border-box;">
+
+        <label>Mensagem Criptografada:</label>
+        <div class="output-area" id="encryptedOutput"></div>
+    </div>
+
+    <script>
+        // JavaScript será adicionado aqui
+    </script>
+</body>
+</html>
+
+
+
+    <script>
+        const messageInput = document.getElementById('messageInput');
+        const encryptedOutput = document.getElementById('encryptedOutput');
+        const encryptionMethodSelect = document.getElementById('encryptionMethod');
+        const keywordInput = document.getElementById('keywordInput');
+        const keywordLabel = document.querySelector('label[for="keywordInput"]');
+        const emojiInput = document.getElementById('emojiInput');
+        const emojiLabel = document.querySelector('label[for="emojiInput"]');
+        const vigenereInput = document.getElementById('vigenereInput');
+        const vigenereLabel = document.querySelector('label[for="vigenereInput"]');
+
+        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+        // --- Cifra de Palavra-Chave ---
+        function generateKeywordCipherAlphabet(keyword) {
+            let cleanKeyword = keyword.toUpperCase().replace(/[^A-Z]/g, '');
+            let uniqueKeyword = '';
+            for (let char of cleanKeyword) {
+                if (!uniqueKeyword.includes(char)) {
+                    uniqueKeyword += char;
+                }
+            }
+            let cipherAlphabet = uniqueKeyword;
+            for (let char of alphabet) {
+                if (!cipherAlphabet.includes(char)) {
+                    cipherAlphabet += char;
+                }
+            }
+            return cipherAlphabet;
+        }
+
+        function encryptKeywordCipher(message, keyword) {
+            if (!keyword) return message;
+            const cipherAlphabet = generateKeywordCipherAlphabet(keyword);
+            let encryptedMessage = '';
+            for (let i = 0; i < message.length; i++) {
+                const char = message[i].toUpperCase();
+                const originalChar = message[i];
+                const index = alphabet.indexOf(char);
+                if (index !== -1) {
+                    const encryptedChar = cipherAlphabet[index];
+                    encryptedMessage += (originalChar === char) ? encryptedChar : encryptedChar.toLowerCase();
+                } else {
+                    encryptedMessage += originalChar;
+                }
+            }
+            return encryptedMessage;
+        }
+
+        // --- Cifra de Atbash ---
+        function encryptAtbash(message) {
+            let encryptedMessage = '';
+            for (let i = 0; i < message.length; i++) {
+                const char = message[i].toUpperCase();
+                const originalChar = message[i];
+                const index = alphabet.indexOf(char);
+                if (index !== -1) {
+                    const encryptedChar = alphabet[alphabet.length - 1 - index];
+                    encryptedMessage += (originalChar === char) ? encryptedChar : encryptedChar.toLowerCase();
+                } else {
+                    encryptedMessage += originalChar;
+                }
+            }
+            return encryptedMessage;
+        }
+
+        // --- Cifra de César (com Emoji) ---
+        function getEmojiShift(emoji) {
+            // Simple approach: count characters in the emoji string (not Unicode value)
+            // For more robust, could use a predefined map or a library to get actual Unicode properties
+            if (!emoji) return 0;
+            // Remove skin tone modifiers and ZWJ sequences for a more consistent count if needed
+            // For simplicity, we'll just use length for now.
+            return emoji.length % alphabet.length; // Ensure shift wraps around alphabet length
+        }
+
+        function encryptCaesarCipher(message, emoji) {
+            const shift = getEmojiShift(emoji);
+            if (shift === 0) return message; // No shift if emoji is empty or invalid
+
+            let encryptedMessage = '';
+            for (let i = 0; i < message.length; i++) {
+                const char = message[i].toUpperCase();
+                const originalChar = message[i];
+                const index = alphabet.indexOf(char);
+                if (index !== -1) {
+                    const newIndex = (index + shift) % alphabet.length;
+                    const encryptedChar = alphabet[newIndex];
+                    encryptedMessage += (originalChar === char) ? encryptedChar : encryptedChar.toLowerCase();
+                } else {
+                    encryptedMessage += originalChar;
+                }
+            }
+            return encryptedMessage;
+        }
+
+        // --- Cifra de Vigenère ---
+        function encryptVigenere(message, key) {
+            if (!key) return message;
+            const cleanKey = key.toUpperCase().replace(/[^A-Z]/g, '');
+            if (cleanKey.length === 0) return message;
+
+            let encryptedMessage = '';
+            let keyIndex = 0;
+
+            for (let i = 0; i < message.length; i++) {
+                const char = message[i].toUpperCase();
+                const originalChar = message[i];
+                const charIndex = alphabet.indexOf(char);
+                
+                if (charIndex !== -1) {
+                    const keyChar = cleanKey[keyIndex % cleanKey.length];
+                    const keyCharIndex = alphabet.indexOf(keyChar);
+                    const newIndex = (charIndex + keyCharIndex) % alphabet.length;
+                    const encryptedChar = alphabet[newIndex];
+                    encryptedMessage += (originalChar === char) ? encryptedChar : encryptedChar.toLowerCase();
+                    keyIndex++;
+                } else {
+                    encryptedMessage += originalChar;
+                }
+            }
+            return encryptedMessage;
+        }
+
+        // --- Idioma Élfico (Fictício) ---
+        function encryptElfico(message) {
+            const elficoMap = {
+                'A': 'Ä', 'B': 'ß', 'C': 'Ç', 'D': 'Ð', 'E': 'Ë', 'F': 'Ƒ', 'G': 'Ğ', 'H': 'Ħ', 'I': 'Ï',
+                'J': 'Ĵ', 'K': 'Ķ', 'L': 'Ł', 'M': 'Μ', 'N': 'Ñ', 'O': 'Ø', 'P': 'Þ', 'Q': 'Ω', 'R': 'Ř',
+                'S': 'Š', 'T': 'Ŧ', 'U': 'Ü', 'V': 'Ṽ', 'W': 'Ŵ', 'X': 'Χ', 'Y': 'Ÿ', 'Z': 'Ž',
+                ' ': ' · ', '.': ' ◊ ', ',': ' ♦ ', '!': ' ★ ', '?': ' ☆ '
+            };
+
+            let encryptedMessage = '';
+            for (let i = 0; i < message.length; i++) {
+                const char = message[i].toUpperCase();
+                const originalChar = message[i];
+                
+                if (elficoMap[char]) {
+                    const elficoChar = elficoMap[char];
+                    encryptedMessage += (originalChar === char) ? elficoChar : elficoChar.toLowerCase();
+                } else {
+                    encryptedMessage += originalChar;
+                }
+            }
+            return encryptedMessage;
+        }
+
+        // --- Código Binário ---
+        function encryptBinary(message) {
+            let binaryMessage = '';
+            for (let i = 0; i < message.length; i++) {
+                const charCode = message.charCodeAt(i);
+                const binary = charCode.toString(2).padStart(8, '0');
+                binaryMessage += binary + ' ';
+            }
+            return binaryMessage.trim();
+        }
+
+        // --- Função de Atualização Principal ---
+        function updateEncryption() {
+            const message = messageInput.value;
+            const method = encryptionMethodSelect.value;
+            let encryptedText = '';
+
+            // Reset visibility of conditional inputs
+            keywordInput.style.display = 'none';
+            keywordLabel.style.display = 'none';
+            emojiInput.style.display = 'none';
+            emojiLabel.style.display = 'none';
+            vigenereInput.style.display = 'none';
+            vigenereLabel.style.display = 'none';
+
+            switch (method) {
+                case 'keyword':
+                    keywordInput.style.display = 'block';
+                    keywordLabel.style.display = 'block';
+                    encryptedText = encryptKeywordCipher(message, keywordInput.value);
+                    break;
+                case 'atbash':
+                    encryptedText = encryptAtbash(message);
+                    break;
+                case 'caesarEmoji':
+                    emojiInput.style.display = 'block';
+                    emojiLabel.style.display = 'block';
+                    encryptedText = encryptCaesarCipher(message, emojiInput.value);
+                    break;
+                case 'vigenere':
+                    vigenereInput.style.display = 'block';
+                    vigenereLabel.style.display = 'block';
+                    encryptedText = encryptVigenere(message, vigenereInput.value);
+                    break;
+                case 'elfico':
+                    encryptedText = encryptElfico(message);
+                    break;
+                case 'binario':
+                    encryptedText = encryptBinary(message);
+                    break;
+                default:
+                    encryptedText = 'Selecione um método de criptografia.';
+            }
+            encryptedOutput.textContent = encryptedText;
+        }
+
+        // --- Event Listeners ---
+        messageInput.addEventListener('input', updateEncryption);
+        encryptionMethodSelect.addEventListener('change', updateEncryption);
+        keywordInput.addEventListener('input', updateEncryption);
+        emojiInput.addEventListener('input', updateEncryption);
+        vigenereInput.addEventListener('input', updateEncryption);
+
+        // Initial call to set up the UI and encrypt any default message
+        updateEncryption();
+    </script>
+</body>
+</html>
+
