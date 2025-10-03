@@ -190,10 +190,10 @@
       const keyword = keywordInput.value;
       let result = "";
 
-      if (!keyword || keyword.trim() === ") {
-        output.value = "Erro: Palavra-chave necessária para criptografar/descriptografar.";
-        return;
-      }
+      if (!keyword || keyword.trim() === "") {
+  output.value = text; // mostra original sem criptografar
+  return;
+}
 
       if (method === "keyword") {
         result = action === "encrypt" ? encryptKeywordCipher(text, keyword) : decryptKeywordCipher(text, keyword);
