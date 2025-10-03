@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tradutor de Criptografia DEIC-DIG</title>
+  <style>
+    /* Reset básico */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      background-color: #0d0d0d;
+      color: #00ff99;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .frame {
+      width: 760px;
+      max-width: calc(100% - 40px);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,255,153,0.08);
+      border: 1px solid rgba(0,255,153,0.06);
+      background: linear-gradient(180deg, rgba(10,10,10,0.98), rgba(15,15,15,0.95));
+    }
+
+    /* Top bar (like an old terminal window) */
+    .topbar {
+      background: linear-gradient(90deg, rgba(0,255,153,0.06), rgba(0,255,153,0.02));
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(0,255,153,0.03);
+    }
+
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot.red { background: #ff4d4d; box-shadow: 0 0 6px rgba(255,77,77,0.2); }
+    .dot.yellow { background: #ffd24d; box-shadow: 0 0 6px rgba(255,210,77,0.12); }
+    .dot.green { background: #4dff99; box-shadow: 0 0 6px rgba(77,255,153,0.08); }
+
+    h1 {
+      font-size: 1.05rem;
+      color: #00ff99;
+      letter-spacing: 1px;
+      margin-left: 6px;
+    }
+
+    .console-body {
+      padding: 18px;
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 18px;
+    }
+
+    label { color: #bfffdc; font-size: 0.88rem; }
+
+    textarea, select, input {
+      width: 100%;
+      padding: 10px 12px;
+      margin-top: 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(0,255,153,0.08);
+      background-color: #0f0f0f;
+      color: #00ff99;
+      font-size: 14px;
+      transition: all 0.18s;
+      resize: vertical;
+    }
+
+    textarea { min-height: 110px; }
+
+    textarea:focus, input:focus, select:focus {
+      outline: none;
+      box-shadow: 0 0 12px rgba(0,255,153,0.06);
+      border-color: rgba(0,255,153,0.22);
+    }
+
+    .controls { display: flex; gap: 8px; margin-top: 10px; }
+    .btn { background: transparent; border: 1px solid rgba(0,255,153,0.12); padding: 8px 10px; cursor: pointer; color: #00ff99; border-radius: 6px; }
+    .btn:hover { background: rgba(0,255,153,0.06); }
+
+    #pasteArea {
+      border: 2px dashed rgba(0,255,153,0.06);
+      padding: 12px;
+      margin-top: 8px;
+      text-align: center;
+      color: #8fffd1;
+      border-radius: 6px;
+      cursor: pointer;
+      background-color: #0f0f0f;
+    }
+
+    #pasteArea:hover { border-color: rgba(0,255,153,0.14); }
+
+    #preview img { max-width: 100%; max-height: 160px; margin-top: 10px; border: 1px solid rgba(0,255,153,0.04); border-radius: 4px; }
+
+    .right-col { display: flex; flex-direction: column; gap: 12px; }
+
+    .output-wrapper { display: flex; gap: 8px; align-items: flex-start; }
+    #output { height: 220px; font-family: 'Courier New', monospace; }
+    #copyBtn { padding: 10px; border-radius: 6px; }
+
+    .small { font-size: 12px; color: rgba(0,255,153,0.7); }
+    .status { margin-top: 6px; font-size: 13px; color: #bfffdc; }
+
+    /* mobile adjustments */
+    @media (max-width: 900px) {
+      .console-body { grid-template-columns: 1fr; }
+      #output { height: 140px; }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <div class="topbar">
+      <div class="dot red"></div>
+      <div class="dot yellow"></div>
+      <div class="dot green"></div>
+      <h1>DEIC-DIG — CRYPTO TERMINAL</h1>
+      <div style="flex:1"></div>
+      <div class="small">Tema: Terminal / Escuro</div>
+    </div>
+
+    <div class="console-body">
+      <div>
+        <label for="action">O que deseja fazer?</label>
+        <select id="action">
+          <option value="encrypt">Criptografar</option>
+          <option value="decrypt">Descriptografar</option>
+        </select>
+
+        <label for="method">Método:</label>
+        <select id="method">
+          <option value="keyword">Cifra de Palavra-Chave (Vigenère)</option>
+        </select>
+
+        <label for="message">Digite sua mensagem:</label>
+        <textarea id="message" placeholder="Sua mensagem secreta aqui..."></textarea>
+
+        <div class="controls">
+          <input type="file" id="imageInput" accept="image/*" class="btn">
+          <div id="pasteArea" class="btn">Colar print (CTRL+V)</div>
+          <button id="togglePreviewBtn" class="btn">Mostrar Preview</button>
+        </div>
+
+        <div id="preview"></div>
+
+        <label for="keyword">Palavra-Chave:</label>
+        <input type="text" id="keyword" placeholder="Ex: DEIC">
+
+        <div class="status" id="ocrStatus"></div>
+      </div>
+
+      <div class="right-col">
+        <div>
+          <label>Resultado:</label>
+          <div class="output-wrapper">
+            <textarea id="output" readonly></textarea>
+            <button id="copyBtn" class="btn">📋 Copiar</button>
+          </div>
+          <div class="small">Use o botão copiar para enviar rápido no chat do RP.</div>
+        </div>
+
+        <div>
+          <label>Opções:</label>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button id="generateQR" class="btn">Gerar QR (opcional)</button>
+            <button id="clearBtn" class="btn">Limpar</button>
+          </div>
+          <div style="margin-top:8px;color:#9fffd1;font-size:12px">Dica: prints recortados da própria mensagem aumentam acurácia do OCR.</div>
+        </div>
+
+        <div>
+          <label>Confiança OCR:</label>
+          <div id="ocrConfidence" class="small">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dependências -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+  <script>
+    // Elementos
+    const messageInput = document.getElementById('message');
+    const keywordInput = document.getElementById('keyword');
+    const output = document.getElementById('output');
+    const methodSelect = document.getElementById('method');
+    const actionSelect = document.getElementById('action');
+    const imageInput = document.getElementById('imageInput');
+    const pasteArea = document.getElementById('pasteArea');
+    const preview = document.getElementById('preview');
+    const ocrStatus = document.getElementById('ocrStatus');
+    const ocrConfidence = document.getElementById('ocrConfidence');
+    const copyBtn = document.getElementById('copyBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const togglePreviewBtn = document.getElementById('togglePreviewBtn');
+    const generateQR = document.getElementById('generateQR');
+
+    // Tesseract worker cache
+    let worker = null;
+    let previewVisible = true;
+
+    // ----- Ciphers (corrigidas) -----
+    function encryptKeywordCipher(text, keyword) {
+      if (!keyword || keyword.trim() === "") return text; // sem palavra-chave, retorna original
+
+      const cleanKeyword = keyword.toUpperCase().replace(/[^A-Z]/g, "");
+      if (cleanKeyword.length === 0) return text;
+
+      let result = "";
+      let keywordIndex = 0;
+
+      const charMap = {
+        'Á': 'A', 'À': 'A', 'Â': 'A', 'Ã': 'A', 'Ä': 'A',
+        'á': 'a', 'à': 'a', 'â': 'a', 'ã': 'a', 'ä': 'a',
+        'É': 'E', 'È': 'E', 'Ê': 'E', 'Ë': 'E',
+        'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
+        'Í': 'I', 'Ì': 'I', 'Î': 'I', 'Ï': 'I',
+        'í': 'i', 'ì': 'i', 'î': 'i', 'ï': 'i',
+        'Ó': 'O', 'Ò': 'O', 'Ô': 'O', 'Õ': 'O', 'Ö': 'O',
+        'ó': 'o', 'ò': 'o', 'ô': 'o', 'õ': 'o', 'ö': 'o',
+        'Ú': 'U', 'Ù': 'U', 'Û': 'U', 'Ü': 'U',
+        'ú': 'u', 'ù': 'u', 'û': 'u', 'ü': 'u',
+        'Ç': 'C', 'ç': 'c'
+      };
+
+      for (let i = 0; i < text.length; i++) {
+        const originalChar = text[i];
+        const upperChar = (charMap[originalChar] || originalChar).toUpperCase();
+
+        const charForCipher = upperChar;
+
+        if (charForCipher >= 'A' && charForCipher <= 'Z') {
+          const tChar = charForCipher.charCodeAt(0) - 65;
+          const kChar = cleanKeyword.charCodeAt(keywordIndex % cleanKeyword.length) - 65;
+          const enc = (tChar + kChar) % 26;
+          let newChar = String.fromCharCode(enc + 65);
+
+          // preserva acento se o original tinha
+          if (/[ÁÀÂÃÄáàâãä]/.test(originalChar)) newChar = preserveAccent(newChar, 'A', originalChar);
+          else if (/[ÉÈÊËéèêë]/.test(originalChar)) newChar = preserveAccent(newChar, 'E', originalChar);
+          else if (/[ÍÌÎÏíìîï]/.test(originalChar)) newChar = preserveAccent(newChar, 'I', originalChar);
+          else if (/[ÓÒÔÕÖóòôõö]/.test(originalChar)) newChar = preserveAccent(newChar, 'O', originalChar);
+          else if (/[ÚÙÛÜúùûü]/.test(originalChar)) newChar = preserveAccent(newChar, 'U', originalChar);
+          else if (/[Çç]/.test(originalChar)) newChar = preserveAccent(newChar, 'C', originalChar);
+
+          // mantém case do original
+          if (originalChar === originalChar.toLowerCase()) newChar = newChar.toLowerCase();
+
+          result += newChar;
+          keywordIndex++;
+        } else {
+          result += originalChar;
+        }
+      }
+      return result;
+    }
+
+    function decryptKeywordCipher(text, keyword) {
+      if (!keyword || keyword.trim() === "") return text;
+
+      const cleanKeyword = keyword.toUpperCase().replace(/[^A-Z]/g, "");
+      if (cleanKeyword.length === 0) return text;
+
+      let result = "";
+      let keywordIndex = 0;
+
+      for (let i = 0; i < text.length; i++) {
+        const originalChar = text[i];
+        const upperChar = (originalChar).toUpperCase();
+
+        const charForCipher = upperChar;
+
+        if (charForCipher >= 'A' && charForCipher <= 'Z') {
+          const tChar = charForCipher.charCodeAt(0) - 65;
+          const kChar = cleanKeyword.charCodeAt(keywordIndex % cleanKeyword.length) - 65;
+          const dec = (tChar - kChar + 26) % 26;
+          let newChar = String.fromCharCode(dec + 65);
+
+          // preserva acento se o original tinha
+          if (/[ÁÀÂÃÄáàâãä]/.test(originalChar)) newChar = preserveAccent(newChar, 'A', originalChar);
+          else if (/[ÉÈÊËéèêë]/.test(originalChar)) newChar = preserveAccent(newChar, 'E', originalChar);
+          else if (/[ÍÌÎÏíìîï]/.test(originalChar)) newChar = preserveAccent(newChar, 'I', originalChar);
+          else if (/[ÓÒÔÕÖóòôõö]/.test(originalChar)) newChar = preserveAccent(newChar, 'O', originalChar);
+          else if (/[ÚÙÛÜúùûü]/.test(originalChar)) newChar = preserveAccent(newChar, 'U', originalChar);
+          else if (/[Çç]/.test(originalChar)) newChar = preserveAccent(newChar, 'C', originalChar);
+
+          if (originalChar === originalChar.toLowerCase()) newChar = newChar.toLowerCase();
+
+          result += newChar;
+          keywordIndex++;
+        } else {
+          result += originalChar;
+        }
+      }
+      return result;
+    }
+
+    function preserveAccent(newCharBase, baseLetter, originalChar) {
+      // tenta mapear o mesmo acento do original para o novo caractere
+      // simplificado: se original tinha acento agudo/til/cedilha, tenta aplicar um equivalente simples
+      const mapUpper = {
+        'A': { 'Á': 'Á', 'À': 'À', 'Â': 'Â', 'Ã': 'Ã', 'Ä': 'Ä' },
+        'E': { 'É': 'É', 'È': 'È', 'Ê': 'Ê', 'Ë': 'Ë' },
+        'I': { 'Í': 'Í', 'Ì': 'Ì', 'Î': 'Î', 'Ï': 'Ï' },
+        'O': { 'Ó': 'Ó', 'Ò': 'Ò', 'Ô': 'Ô', 'Õ': 'Õ', 'Ö': 'Ö' },
+        'U': { 'Ú': 'Ú', 'Ù': 'Ù', 'Û': 'Û', 'Ü': 'Ü' },
+        'C': { 'Ç': 'Ç' }
+      };
+
+      const mapLower = {};
+      for (const k in mapUpper) {
+        mapLower[k.toLowerCase()] = {};
+        for (const s in mapUpper[k]) mapLower[k.toLowerCase()][s.toLowerCase()] = mapUpper[k][s].toLowerCase();
+      }
+
+      // detecta o acento mais provável no original
+      const upperOriginal = originalChar.toUpperCase();
+      const candidates = mapUpper[baseLetter] || {};
+      for (const k in candidates) {
+        if (upperOriginal === (k)) return candidates[k].replace(baseLetter, newCharBase).slice(0,1) || newCharBase;
+      }
+
+      // fallback: apenas devolve newCharBase
+      return newCharBase;
+    }
+
+    // ---- end ciphers ----
+
+    function updateOutput() {
+      const method = methodSelect.value;
+      const action = actionSelect.value;
+      const text = messageInput.value;
+      const keyword = keywordInput.value;
+
+      if (!keyword || keyword.trim() === "") {
+        // comportamento antigo: sem palavra-chave, mostra o texto original
+        output.value = (action === 'encrypt') ? text : text;
+        return;
+      }
+
+      if (method === 'keyword') {
+        output.value = action === 'encrypt' ? encryptKeywordCipher(text, keyword) : decryptKeywordCipher(text, keyword);
+      }
+    }
+
+    // evento para atualizar ao digitar
+    messageInput.addEventListener('input', updateOutput);
+    keywordInput.addEventListener('input', updateOutput);
+    methodSelect.addEventListener('change', updateOutput);
+    actionSelect.addEventListener('change', updateOutput);
+
+    // copiar rapido
+    copyBtn.addEventListener('click', async () => {
+      if (output.value.trim() === '') return;
+      try {
+        await navigator.clipboard.writeText(output.value);
+        flashStatus('Copiado para clipboard');
+      } catch (e) {
+        flashStatus('Falha ao copiar');
+      }
+    });
+
+    clearBtn.addEventListener('click', () => {
+      messageInput.value = '';
+      keywordInput.value = '';
+      output.value = '';
+      preview.innerHTML = '';
+      ocrStatus.textContent = '';
+      ocrConfidence.textContent = '—';
+      updateOutput();
+    });
+
+    togglePreviewBtn.addEventListener('click', () => {
+      previewVisible = !previewVisible;
+      preview.style.display = previewVisible ? 'block' : 'none';
+      togglePreviewBtn.textContent = previewVisible ? 'Mostrar Preview' : 'Ocultar Preview';
+    });
+
+    // feedback rápido
+    function flashStatus(text) {
+      ocrStatus.textContent = text;
+      setTimeout(() => { if (ocrStatus.textContent === text) ocrStatus.textContent = ''; }, 1500);
+    }
+
+    // Drag & Drop + paste
+    pasteArea.addEventListener('click', () => { pasteArea.focus(); });
+
+    imageInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) processOCR(file);
+    });
+
+    document.addEventListener('paste', (event) => {
+      if (!event.clipboardData) return;
+      const items = event.clipboardData.items;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          processOCR(file);
+          return;
+        }
+      }
+    });
+
+    // Preprocess (canvas) para melhorar OCR
+    async function preprocessImageFile(file, scale = 2.0) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imgData.data;
+
+          // grayscale + contrast stretch
+          let minL = 255, maxL = 0;
+          for (let i = 0; i < data.length; i += 4) {
+            const lum = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+            if (lum < minL) minL = lum;
+            if (lum > maxL) maxL = lum;
+          }
+          const range = Math.max(1, maxL - minL);
+          for (let i = 0; i < data.length; i += 4) {
+            let lum = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+            lum = ((lum - minL) * 255) / range;
+            data[i] = data[i+1] = data[i+2] = lum;
+          }
+          ctx.putImageData(imgData, 0, 0);
+
+          // simple adaptive threshold (tiles)
+          const tile = 32;
+          const binData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          for (let y = 0; y < canvas.height; y += tile) {
+            for (let x = 0; x < canvas.width; x += tile) {
+              let sum = 0, count = 0;
+              for (let yy = y; yy < Math.min(y + tile, canvas.height); yy++) {
+                for (let xx = x; xx < Math.min(x + tile, canvas.width); xx++) {
+                  const idx = (yy * canvas.width + xx) * 4;
+                  sum += binData.data[idx];
+                  count++;
+                }
+              }
+              const mean = sum / count;
+              for (let yy = y; yy < Math.min(y + tile, canvas.height); yy++) {
+                for (let xx = x; xx < Math.min(x + tile, canvas.width); xx++) {
+                  const idx = (yy * canvas.width + xx) * 4;
+                  const val = binData.data[idx] < mean - 10 ? 0 : 255;
+                  binData.data[idx] = binData.data[idx+1] = binData.data[idx+2] = val;
+                }
+              }
+            }
+          }
+          ctx.putImageData(binData, 0, 0);
+
+          URL.revokeObjectURL(url);
+          resolve(canvas);
+        };
+        img.onerror = (e) => { URL.revokeObjectURL(url); reject(e); };
+        img.src = url;
+      });
+    }
+
+    async function ensureWorker() {
+      if (worker) return worker;
+      worker = Tesseract.createWorker({
+        logger: m => {
+          if (m.status === 'recognizing text') {
+            const p = Math.round(m.progress * 100);
+            ocrStatus.textContent = `Processando OCR: ${p}%`;
+          }
+        }
+      });
+      await worker.load();
+      await worker.loadLanguage('por+eng');
+      await worker.initialize('por+eng');
+      await worker.setParameters({
+        tessedit_pageseg_mode: '6', // single block
+        tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÇç0123456789.,:;!?-()\'" '
+      });
+      return worker;
+    }
+
+    async function processOCR(file) {
+      if (!file) return;
+      preview.innerHTML = '';
+      ocrStatus.textContent = 'Preparando...';
+
+      try {
+        const canvas = await preprocessImageFile(file, 2.0);
+        const imgEl = document.createElement('img');
+        imgEl.src = canvas.toDataURL();
+        preview.appendChild(imgEl);
+
+        const wk = await ensureWorker();
+        const { data: { text, confidence } } = await wk.recognize(canvas);
+        ocrConfidence.textContent = Math.round(confidence) + '%';
+        messageInput.value = text.trim();
+        ocrStatus.textContent = 'Texto extraído com sucesso';
+        updateOutput();
+      } catch (err) {
+        console.error(err);
+        ocrStatus.textContent = 'Erro ao processar OCR';
+      }
+    }
+
+    // arrastar e soltar
+    window.addEventListener('dragover', e => e.preventDefault());
+    window.addEventListener('drop', e => {
+      e.preventDefault();
+      if (e.dataTransfer.files && e.dataTransfer.files.length) {
+        processOCR(e.dataTransfer.files[0]);
+      }
+    });
+
+    // botão gerar QR (gera do texto cifrado atual)
+    generateQR.addEventListener('click', () => {
+      const text = output.value.trim();
+      if (!text) { flashStatus('Nenhum resultado para gerar QR'); return; }
+      QRCode.toDataURL(text, { margin: 1, scale: 4 }).then(url => {
+        const w = window.open('');
+        w.document.write(`<img src="${url}" alt="QR">`);
+      }).catch(() => flashStatus('Erro ao gerar QR'));
+    });
+
+    // Inicializa estado
+    document.addEventListener('DOMContentLoaded', () => {
+      updateOutput();
+    });
+
+  </script>
+</body>
+</html>
