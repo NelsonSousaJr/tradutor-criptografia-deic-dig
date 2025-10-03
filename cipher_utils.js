@@ -42,12 +42,12 @@ function encryptKeywordCipher(text, keyword) {
 }
 
 function decryptKeywordCipher(text, keyword) {
-  if (!keyword || keyword.trim() === ") return ""; // Retorna string vazia para palavra-chave ausente
+  if (!keyword || keyword.trim() === "") return "";
 
   const originalText = text;
   // A palavra-chave deve ser limpa de caracteres não alfabéticos para o cálculo da cifra
   // Mantemos apenas A-Z para a palavra-chave, pois ela define o shift da cifra de Vigenère
-  const cleanKeyword = keyword.toUpperCase().replace(/[^A-Z]/g, ");
+  const cleanKeyword = keyword.toUpperCase().replace(/[^A-Z]/g, "");
 
   if (cleanKeyword.length === 0) return ""; // Retorna string vazia se a palavra-chave limpa for inválida
 
