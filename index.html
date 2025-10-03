@@ -170,8 +170,9 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+  <script src="cipher_utils.js"></script> <!-- Inclui o novo arquivo JavaScript -->
   <script>
-    const messageInput = document.getElementById('message');
+    const messageInput = document.getElementById('message' );
     const keywordInput = document.getElementById('keyword');
     const output = document.getElementById('output');
     const methodSelect = document.getElementById('method');
@@ -182,34 +183,6 @@
     const ocrProgress = document.getElementById('ocrProgress');
     const preview = document.getElementById('preview');
 
-    function encryptKeywordCipher(text, keyword) {
-      if (!keyword) return "Erro: palavra-chave necessária!";
-      text = text.toUpperCase().replace(/[^A-Z]/g, '');
-      keyword = keyword.toUpperCase().replace(/[^A-Z]/g, '');
-      let result = '';
-      for (let i = 0; i < text.length; i++) {
-        const tChar = text.charCodeAt(i) - 65;
-        const kChar = keyword.charCodeAt(i % keyword.length) - 65;
-        const enc = (tChar + kChar) % 26;
-        result += String.fromCharCode(enc + 65);
-      }
-      return result;
-    }
-
-    function decryptKeywordCipher(text, keyword) {
-      if (!keyword) return "Erro: palavra-chave necessária!";
-      text = text.toUpperCase().replace(/[^A-Z]/g, '');
-      keyword = keyword.toUpperCase().replace(/[^A-Z]/g, '');
-      let result = '';
-      for (let i = 0; i < text.length; i++) {
-        const tChar = text.charCodeAt(i) - 65;
-        const kChar = keyword.charCodeAt(i % keyword.length) - 65;
-        const dec = (tChar - kChar + 26) % 26;
-        result += String.fromCharCode(dec + 65);
-      }
-      return result;
-    }
-
     function updateOutput() {
       const method = methodSelect.value;
       const action = actionSelect.value;
@@ -217,6 +190,7 @@
       const keyword = keywordInput.value;
       let result = "";
       if (method === "keyword") {
+        // Chama as funções do arquivo cipher_utils.js
         result = action === "encrypt" ? encryptKeywordCipher(text, keyword) : decryptKeywordCipher(text, keyword);
       }
       output.value = result;
