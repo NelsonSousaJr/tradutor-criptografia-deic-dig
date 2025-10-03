@@ -172,16 +172,16 @@
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
   <script src="cipher_utils.js"></script> <!-- Inclui o novo arquivo JavaScript -->
   <script>
-    const messageInput = document.getElementById('message' );
-    const keywordInput = document.getElementById('keyword');
-    const output = document.getElementById('output');
-    const methodSelect = document.getElementById('method');
-    const actionSelect = document.getElementById('action');
-    const imageInput = document.getElementById('imageInput');
-    const pasteArea = document.getElementById('pasteArea');
-    const ocrStatus = document.getElementById('ocrStatus');
-    const ocrProgress = document.getElementById('ocrProgress');
-    const preview = document.getElementById('preview');
+    const messageInput = document.getElementById("message" );
+    const keywordInput = document.getElementById("keyword");
+    const output = document.getElementById("output");
+    const methodSelect = document.getElementById("method");
+    const actionSelect = document.getElementById("action");
+    const imageInput = document.getElementById("imageInput");
+    const pasteArea = document.getElementById("pasteArea");
+    const ocrStatus = document.getElementById("ocrStatus");
+    const ocrProgress = document.getElementById("ocrProgress");
+    const preview = document.getElementById("preview");
 
     function updateOutput() {
       const method = methodSelect.value;
@@ -190,7 +190,7 @@
       const keyword = keywordInput.value;
       let result = "";
 
-      if (!keyword || keyword.trim() === '') {
+      if (!keyword || keyword.trim() === ") {
         output.value = "Erro: Palavra-chave necessária para criptografar/descriptografar.";
         return;
       }
@@ -202,12 +202,12 @@
     }
 
     // Chama updateOutput() no carregamento da página para exibir o estado inicial
-    document.addEventListener('DOMContentLoaded', updateOutput);
+    document.addEventListener("DOMContentLoaded", updateOutput);
 
-    messageInput.addEventListener('input', updateOutput);
-    keywordInput.addEventListener('input', updateOutput);
-    methodSelect.addEventListener('change', updateOutput);
-    actionSelect.addEventListener('change', updateOutput);
+    messageInput.addEventListener("input", updateOutput);
+    keywordInput.addEventListener("input", updateOutput);
+    methodSelect.addEventListener("change", updateOutput);
+    actionSelect.addEventListener("change", updateOutput);
 
     function showPreview(file) {
       const reader = new FileReader();
@@ -242,7 +242,7 @@
       }
     }
 
-    imageInput.addEventListener('change', (event) => {
+    imageInput.addEventListener("change", (event) => {
       const file = event.target.files[0];
       if (file) processOCR(file);
     });
