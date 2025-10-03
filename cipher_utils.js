@@ -1,10 +1,12 @@
 function encryptKeywordCipher(text, keyword) {
-  if (!keyword || keyword.trim() === '') return ""; // Retorna string vazia para palavra-chave ausente
+  if (!keyword || keyword.trim() === ") return ""; // Retorna string vazia para palavra-chave ausente
 
   const originalText = text;
-  const cleanKeyword = keyword.toUpperCase().replace(/[^A-Z]/g, '');
+  // A palavra-chave deve ser limpa de caracteres não alfabéticos para o cálculo da cifra
+  // Mantemos apenas A-Z para a palavra-chave, pois ela define o shift da cifra de Vigenère
+  const cleanKeyword = keyword.toUpperCase().replace(/[^A-Z]/g, ");
 
-  if (cleanKeyword.length === 0) return ""; // Retorna string vazia para palavra-chave inválida
+  if (cleanKeyword.length === 0) return ""; // Retorna string vazia se a palavra-chave limpa for inválida
 
   let result = "";
   let keywordIndex = 0;
@@ -13,6 +15,7 @@ function encryptKeywordCipher(text, keyword) {
     const originalChar = originalText[i];
     const upperChar = originalChar.toUpperCase();
 
+    // Mapeamento de caracteres acentuados para suas versões não acentuadas para o cálculo da cifra
     const charMap = {
       'Á': 'A', 'À': 'A', 'Â': 'A', 'Ã': 'A', 'Ä': 'A',
       'É': 'E', 'È': 'E', 'Ê': 'E', 'Ë': 'E',
@@ -31,6 +34,7 @@ function encryptKeywordCipher(text, keyword) {
       result += String.fromCharCode(enc + 65);
       keywordIndex++;
     } else {
+      // Mantém espaços e caracteres especiais inalterados
       result += originalChar;
     }
   }
@@ -38,12 +42,14 @@ function encryptKeywordCipher(text, keyword) {
 }
 
 function decryptKeywordCipher(text, keyword) {
-  if (!keyword || keyword.trim() === '') return ""; // Retorna string vazia para palavra-chave ausente
+  if (!keyword || keyword.trim() === ") return ""; // Retorna string vazia para palavra-chave ausente
 
   const originalText = text;
-  const cleanKeyword = keyword.toUpperCase().replace(/[^A-Z]/g, '');
+  // A palavra-chave deve ser limpa de caracteres não alfabéticos para o cálculo da cifra
+  // Mantemos apenas A-Z para a palavra-chave, pois ela define o shift da cifra de Vigenère
+  const cleanKeyword = keyword.toUpperCase().replace(/[^A-Z]/g, ");
 
-  if (cleanKeyword.length === 0) return ""; // Retorna string vazia para palavra-chave inválida
+  if (cleanKeyword.length === 0) return ""; // Retorna string vazia se a palavra-chave limpa for inválida
 
   let result = "";
   let keywordIndex = 0;
@@ -52,6 +58,7 @@ function decryptKeywordCipher(text, keyword) {
     const originalChar = originalText[i];
     const upperChar = originalChar.toUpperCase();
 
+    // Mapeamento de caracteres acentuados para suas versões não acentuadas para o cálculo da cifra
     const charMap = {
       'Á': 'A', 'À': 'A', 'Â': 'A', 'Ã': 'A', 'Ä': 'A',
       'É': 'E', 'È': 'E', 'Ê': 'E', 'Ë': 'E',
@@ -70,6 +77,7 @@ function decryptKeywordCipher(text, keyword) {
       result += String.fromCharCode(dec + 65);
       keywordIndex++;
     } else {
+      // Mantém espaços e caracteres especiais inalterados
       result += originalChar;
     }
   }
