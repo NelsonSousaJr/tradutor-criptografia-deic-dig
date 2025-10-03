@@ -189,12 +189,20 @@
       const text = messageInput.value;
       const keyword = keywordInput.value;
       let result = "";
+
+      if (!keyword || keyword.trim() === '') {
+        output.value = "Erro: Palavra-chave necessária para criptografar/descriptografar.";
+        return;
+      }
+
       if (method === "keyword") {
-        // Chama as funções do arquivo cipher_utils.js
         result = action === "encrypt" ? encryptKeywordCipher(text, keyword) : decryptKeywordCipher(text, keyword);
       }
       output.value = result;
     }
+
+    // Chama updateOutput() no carregamento da página para exibir o estado inicial
+    document.addEventListener('DOMContentLoaded', updateOutput);
 
     messageInput.addEventListener('input', updateOutput);
     keywordInput.addEventListener('input', updateOutput);
