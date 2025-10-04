@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>DEIC-DIG — Neural Crypto Interface</title>
+  <title>DEIC-DIG — Scan Crypto Interface</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono:wght@400&display=swap');
     
@@ -550,11 +550,11 @@
               <button id="generateQR" class="cyber-btn">QR Code</button>
             </div>
             
-            <label class="cyber-label">Confiança Neural</label>
+            <label class="cyber-label">Confiança do Scan</label>
             <div id="ocrConfidence" class="confidence-display">—</div>
             
             <div style="font-size: 10px; color: rgba(0,255,153,0.5); margin-top: 15px;">
-              Dica: Imagens com alto contraste aumentam a precisão do reconhecimento neural
+              Dica: Imagens com alto contraste aumentam a precisão do reconhecimento de scan neural
             </div>
           </div>
         </div>
@@ -815,7 +815,7 @@
           preview.appendChild(imgEl);
 
           try {
-            flashStatus('Executando reconhecimento neural...');
+            flashStatus('Executando scan neural...');
             const { data: { text, confidence } } = await wk.recognize(canvas);
             const conf = Math.round(confidence);
             
@@ -827,11 +827,11 @@
               updateOutput();
               triggerGlitch(); // Efeito visual de sucesso
             } else {
-              flashStatus('Reconhecimento neural incompleto', true);
+              flashStatus('Scan neural incompleto', true);
               ocrConfidence.textContent = `Baixa confiança (${conf}%)`;
             }
           } catch (recErr) {
-            flashStatus('Erro no processamento neural', true);
+            flashStatus('Erro no processamento de scan neural', true);
             console.error('Recognition error:', recErr);
           }
         };
@@ -843,7 +843,7 @@
         img.src = URL.createObjectURL(file);
 
       } catch (err) {
-        flashStatus('Falha crítica no sistema neural', true);
+        flashStatus('Falha crítica no sistema de scan', true);
         console.error('Error processing OCR:', err);
       }
     }
@@ -883,7 +883,7 @@
       // Efeito de glitch ocasional
       setInterval(triggerGlitch, 15000 + Math.random() * 10000);
       
-      flashStatus('Sistema neural inicializado');
+      flashStatus('Sistema de scan neural inicializado');
     });
   </script>
 </body>
